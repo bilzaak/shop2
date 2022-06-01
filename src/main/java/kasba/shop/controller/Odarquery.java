@@ -87,7 +87,7 @@ return new ResponseEntity<Masikodar>(ms,HttpStatus.OK);
 }
 	
 	
-@GetMapping("/todaysordar")
+@GetMapping("/todaysodar")
 	public ResponseEntity<Masikodar> todayssell() throws ParseException{
 	SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 	Date d =sdf.parse(sdf.format(new Date()));
@@ -104,7 +104,8 @@ return new ResponseEntity<Masikodar>(ms,HttpStatus.OK);
 	ms.setOdars(lst);
 	return new ResponseEntity<Masikodar>(ms,HttpStatus.OK);
 
-	}	
+
+}	
 	
 
 @GetMapping("/odarinadate")
@@ -145,7 +146,4 @@ return new ResponseEntity<Masikodar>(ms,HttpStatus.OK);
 }
 
 
-
-
-	
 }

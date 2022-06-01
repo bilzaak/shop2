@@ -33,20 +33,16 @@ public class Sellcontrol {
 	
 	@Autowired
 	private Sellingrepo slr;
-	
-	@Autowired
+		@Autowired
 	private Userregrepo  usr;
-
 	@Autowired
 	private Stockrepo  str;
-	
-	@Autowired
+		@Autowired
 	private Makepricerepo mpr;
-	
-	List<Sell> lst=null;
-	
-	String record="";
+		List<Sell> lst=null;
+		String record="";
 	public void checduplicateproduct(Sell oj){
+		
 		int t=0;
 	for(Sell k : lst) {
 		if(oj.getShopid()==k.getShopid() && oj.getCompany().contentEquals(k.getCompany()) &&
@@ -75,7 +71,23 @@ public ResponseEntity<Sell> savesell(@RequestBody List<Sell> sellst,HttpSession 
 		checduplicateproduct(o);	
 		
 	}
-		Sell sd=lst.get(0);
+
+	Sell sd=sellst.get(0);
+	if(sd==null) {
+		sd.setCompany("null pointer is noticed");
+		return new  ResponseEntity<Sell>(sd,HttpStatus.OK);	
+	}
+		if(sd.getSellto().contentEquals("")) {
+			sd.setCompany("select the customer option");
+			return new  ResponseEntity<Sell>(sd,HttpStatus.OK);		
+		}
+		
+		if(sd.getStringselldate().contentEquals("") || sd.getStringselldate()==null || sd.getStringselldate().length()<10 ){
+			sd.setCompany("wrong date selection");
+			return new  ResponseEntity<Sell>(sd,HttpStatus.OK);		
+		}	
+
+		
 	int shopid = (int) session.getAttribute("shopid");
 	SimpleDateFormat sdf2= new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
 	String memokey= sdf2.format(new Date());
@@ -84,13 +96,30 @@ public ResponseEntity<Sell> savesell(@RequestBody List<Sell> sellst,HttpSession 
 		o.setShopid(shopid);
 		
 		if(sd.getSellto().contentEquals("toperson")) {
-		 memokey=sd.getCustomername()+memokey;
-			o.setCustomername(sd.getCustomername());o.setCustomerphone(sd.getCustomerphone());
-			o.setMemokey(memokey);
+			if(sd.getCustomername().contentEquals("") || sd.getCustomerphone().contentEquals("") || sd.getCustomerphone().length()<11 || 
+					
+					sd.getCustomername().length()<1) {
+				sd.setCompany("customer name or phone number is wrong");
+				return new  ResponseEntity<Sell>(sd,HttpStatus.OK);				
+			}
+		else {
+				memokey=sd.getCustomername()+memokey;
+				o.setCustomername(sd.getCustomername());o.setCustomerphone(sd.getCustomerphone());
+				o.setMemokey(memokey);
+			}
+		
+			
 		}
 		
+		
 		else {
-			 memokey=shopid+memokey;
+	
+			if(sd.getSellshopid()==0 || sd.getSellshopid()<1 ) {
+				sd.setCompany("shop id is wrong");
+				return new  ResponseEntity<Sell>(sd,HttpStatus.OK);	
+			}
+				
+			   memokey=shopid+memokey;
 				o.setSellshopid(sd.getSellshopid());
 				o.setCustomername("--");o.setCustomerphone("--");
 				o.setMemokey(memokey);	
@@ -100,7 +129,6 @@ public ResponseEntity<Sell> savesell(@RequestBody List<Sell> sellst,HttpSession 
 	}	
 	
 	
-
 	if(!record.contentEquals("")){
 		
 		sd.setCompany(record);
@@ -135,8 +163,8 @@ return new ResponseEntity<Sell>(sd,HttpStatus.OK);
 	
 	
 	
-	if(sd.getSellto().contentEquals("toshopkeeper") && sd.getShopid()<1) {
-      Optional<Userreg> t = usr.findById(sd.getShopid());
+	if(sd.getSellto().contentEquals("toshopkeeper") && sd.getSellshopid()<1) {
+      Optional<Userreg> t = usr.findById((int) sd.getSellshopid());
 	if(!t.isPresent()) {
 		sd.setCompany("wrong shop id");
 return new ResponseEntity<Sell>(sd,HttpStatus.OK);	 
@@ -151,10 +179,15 @@ return new ResponseEntity<Sell>(sd,HttpStatus.OK);
 for(Sell s : lst) {
 s.setStringselldate(sd.getStringselldate());
 s.setSelldate(sd.getSelldate());
-Stock st = str.findByShopidAndCompanyAndNameAndCode(shopid,s.getCompany(),s.getName(),s.getCode()).get(0);
+List<Stock> stl= str.findByShopidAndCompanyAndNameAndCode(shopid,s.getCompany(),s.getName(),s.getCode());
+if(stl.isEmpty()) {
+	sd.setCompany(s.getName()+", "+s.getCompany()+" this item is not exist ");	
+	return new ResponseEntity<Sell>(sd,HttpStatus.OK);	
+}
+
+Stock st=stl.get(0);
 if(s.getAmount()>st.getAmount()) {
-	
-	sd.setCompany(s.getName()+", "+s.getCompany()+" this item is not enough in your stock it's amount is "+st.getAmount());
+sd.setCompany(s.getName()+", "+s.getCompany()+" this item is not enough in your stock it's amount is "+st.getAmount());
 return new ResponseEntity<Sell>(sd,HttpStatus.OK);		
 	
 }
@@ -167,7 +200,6 @@ Stock st = str.findByShopidAndCompanyAndNameAndCode(shopid,s.getCompany(),s.getN
 float restamount=st.getAmount()-s.getAmount();
 st.setAmount(restamount);
 st.setTotalprice(restamount*st.getUnitprice());
-
 str.save(st);	
 }
 

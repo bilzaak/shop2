@@ -17,18 +17,17 @@ pageEncoding="UTF-8"%>
 <script>
 var module=angular.module("sellapp",[]);
 module.controller("sellcontrol",function($scope,$http){
-	$scope.year=[];
 	
+	$scope.year=[];
+
 	$scope.inityear=function(){
 		for(i=2015;i<2040;i++){
 			$scope.year.push(i);
 		}
 			}
 
-
-$scope.day=["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"];
-	
-$scope.month=["1","2","3","4","5","6","7","8","9","10","11","12"];
+$scope.day=["01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"];
+$scope.month=["01","02","03","04","05","06","07","08","09","10","11","12"];
 	
 	
 
@@ -76,9 +75,6 @@ $scope.findproduct=function(i,sby){
 	}
 			
 }
-
-
-
 
 
 $scope.filltext=function(v){
@@ -171,7 +167,7 @@ $scope.saveorder=function(){
 	
 /*
   
- sell4 section
+ sell4 section //id="4"
  
  */
  
@@ -182,13 +178,13 @@ $scope.check2=["1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","1","
  $scope.sellday=""; $scope.sellmonth=""; $scope.sellyear=""; 
  
 var s1={"company":"","shopid":"", "name":"","code":"","amount":"","unitprice":"","sellto":"",
-		"totalprice":"","due":"","stringselldate":"","customername":"","customerphone":""};  
+		"totalprice":"","due":"","stringselldate":"","customername":"","customerphone":"","sellshopid":""};  
 	
 var s2={"company":"","shopid":"", "name":"","code":"","amount":"","unitprice":"","sellto":"",
-		"totalprice":"","due":"","stringselldate":"","customername":"","customerphone":""};    
+		"totalprice":"","due":"","stringselldate":"","customername":"","customerphone":"","sellshopid":""};    
 			
 var s3={"company":"","shopid":"", "name":"","code":"","amount":"","unitprice":"","sellto":"",
-		"totalprice":"","due":"","stringselldate":"","customername":"","customerphone":""};  
+		"totalprice":"","due":"","stringselldate":"","customername":"","customerphone":"","sellshopid":""};  
 
 $scope.sell=[]; 
 $scope.sell.push(s1,s2,s3);	
@@ -196,8 +192,8 @@ $scope.sell.push(s1,s2,s3);
 
 $scope.addsell=function(i){
 var s={"trid":"","company":"","shopid":"", "name":"","code":"","amount":"","unitprice":"","sellto":"",
-			"totalprice":"","due":"","stringorderdate":""};  
-	$scope.order.splice(i,0,s);
+			"totalprice":"","due":"","stringselldate":"","sellshopid":""};  
+	$scope.sell.splice(i,0,s);
 }
 
 
@@ -208,25 +204,31 @@ $scope.removesell=function(i){
 
 }	
 
+
 $scope.savesell=function(){
-	$scope.sell[0].stringselldate=$scope.sellday+"/"+$scope.sellmonth+"/"+$scope.sellyear;
-	$http({
-		method:"POST",
-		data:angular.toJson($scope.sell),
-		url:"${pageContext.request.contextPath}/sell/savesell",
-        headers:{"Content-Type":"application/json"}}
-		
-	).then(function(response){
-		
-	alert(response.data.company);
 	
-	})
+if($scope.sell[0].sellto!=""){
+		$scope.sell[0].stringselldate=$scope.sellday+"/"+$scope.sellmonth+"/"+$scope.sellyear;
+		$http({
+			method:"POST",
+			data:angular.toJson($scope.sell),
+			url:"${pageContext.request.contextPath}/sell/savesell",
+	        headers:{"Content-Type":"application/json"}}
+			
+		).then(function(response){
+			
+		alert(response.data.company);
+		
+		})
+	}
+	if($scope.sell[0].sellto==""){
+		alert("select sell to option");
+	}
 	
 	}
 	
-	$scope.sellto=["toperson","toshopkeeper"];
+$scope.sellto=["toperson","toshopkeeper"];
 	
-
 	$scope.checkfilt2=function(i){
 				
 			if($scope.check2[i]=="0"){
@@ -239,8 +241,8 @@ $scope.savesell=function(){
 			
 		                  }
 			
-			
-		var r2=0;
+
+	var r2=0;
 
 	$scope.findproduct2=function(i,sby){
 		
@@ -263,13 +265,14 @@ $scope.savesell=function(){
 				
 	}
 
-
-
-
-
+	
+	$scope.makeprice=[];
+	
 	$scope.filltext2=function(v){
-		$scope.sell[r2]=v; 
+		$scope.makeprice[r2]=v;
+		$scope.sell[r2].code=v.code; $scope.sell[r2].name=v.name;
 		$scope.sell[r2].totalprice=v.unitprice*v.amount;
+		$scope.sell[r2].unitprice=v.last;
 		$scope.check2[r2]="1";
 		$scope.products2=[];
 		
@@ -281,6 +284,8 @@ $scope.savesell=function(){
 		r2=i;
 		$scope.sell[r2].totalprice=v.unitprice*v.amount;	
 	}
+	
+	
 
 
 
@@ -301,6 +306,86 @@ $scope.savesell=function(){
 
 	}
 
+	$scope.msmvalue=[
+"january","february","march","april","may","june","july","august","september","october","november","december"];
+	
+	//sell5  //masik sell id="5"
+	
+	$scope.msmonth=""; $scope.msyear="";
+	$scope.msarr=[];
+	
+	$scope.mssell=function(){
+	$scope.msarr=[$scope.msmonth,$scope.msyear];
+		
+	$http({
+			method:"POST",
+				data:angular.toJson($scope.msarr),
+				url:"${pageContext.request.contextPath}/sellquery/sellinamonth",
+		        headers:{"Content-Type":"application/json"}}
+				
+			).then(function(response){
+				
+			$scope.msr=response.data;
+			
+			
+			})
+		}
+	
+	//sell6 id="6" todays sell
+	
+	$scope.todayssell=function(){
+
+	$http({
+				method:"GET",		
+				url:"${pageContext.request.contextPath}/sellquery/todayssell",
+			    headers:{"Content-Type":"application/json"}}
+					
+				).then(function(response){
+					
+				$scope.tsr=response.data;
+				
+				
+				})
+			}	
+	
+	// masik order id="2"
+	
+	$scope.momonth=""; $scope.moyear="";
+	$scope.moarr=[];
+	
+	$scope.monthlyorder=function(){
+		
+	$scope.moarr=[$scope.momonth,$scope.moyear];
+		
+	$http({
+			method:"POST",
+				data:angular.toJson($scope.moarr),
+				url:"${pageContext.request.contextPath}/odarquery/odarinamonth",
+		        headers:{"Content-Type":"application/json"}}
+				
+			).then(function(response){
+				
+			$scope.mor=response.data;
+			
+			
+			})
+		}
+	
+	
+	//sell6 id="6" todays order id="3"
+	$scope.todaysorder=function(){
+	$http({
+			method:"GET",		
+			url:"${pageContext.request.contextPath}/odarquery/todaysodar",
+			headers:{"Content-Type":"application/json"}}
+					
+				).then(function(response){
+					
+				$scope.tor=response.data;
+				
+				
+				})
+			}	
 	
 	// customer
 	
@@ -551,8 +636,7 @@ if(session.getAttribute("adminuser")==null && session.getAttribute("adminpass")=
        </li>       
       
       
-                
-              <li class="nav-item dropdown" style="padding-left:20px;">    <!--   //due1 -->  <!--   //due2 -->
+     <li class="nav-item dropdown" style="padding-left:20px;">    <!--   //due1 -->  <!--   //due2 -->
       <a class="nav-link" href="#" style="margin-left:5%;color:white;" role="button" 
         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
          বিক্রির  বকেয়া </a>
@@ -762,8 +846,11 @@ product name
 </ul>
 </td>
 
-<td><input type="number"  ng-model="x.amount" ng-keyup="setprice($index,x)" /></td>
-<td><input type="number"  ng-model="x.unitprice" ng-keyup="setprice($index,x)"  /></td>
+<td><input type="number"  ng-model="x.amount" ng-keyup="setprice($index,x)" />
+
+</td>
+<td><input type="number"  ng-model="x.unitprice" ng-keyup="setprice($index,x)"  />
+</td>
 <td><input type="number"  ng-model="x.totalprice" /></td>
 <td><button class="btn btn-primary btn-sm" ng-click="addorder($index)">(+)</button> <br/> <br/>
 <button class="btn btn-primary btn-sm" ng-click="removeorder($index)">(-)</button></td>
@@ -781,17 +868,101 @@ product name
 
 
 
+//id="3" 
+ <!--  //order3 -->
+<div  style="margin-left:8%;background-color:skyblue;width:85%;display:none;font-size:0.80em;padding:20px;text-align:center;" id="3">
+<h4>আজকের মোট অর্ডার   ==id=3</h4>
+<button ng-click="todaysorder()">todays order</button> <br/>
 
- <!--  //order2 -->
-<div  style="margin-left:8%;background-color:skyblue;width:85%;display:none;font-size:0.80em;padding:20px;text-align:center;" id="2">
-<h4>মাসিক  অর্ডার দেখুন  ==id=2</h4>
+<table align="center" border="1" ng-if="tor.odars.length>0">
+ <tr>
+ <th>
+ product <br/>
+ information
+ </th>
+ <th>
+ amount <br/>
+ & taka
+ </th>
+ <th>
+ sell date
+ </th>
+ </tr>
+ 
+ <tr ng-repeat="x in tor.odars">
+ <td>
+ name:{{x.name}} <br/>
+ company:{{x.company}} <br/>
+ code:{{x.code}}<br/>
+ unit price:{{x.unitprice}}<br/>
 
+ 
+ </td>
+ 
+
+ <td>
+ amount:{{x.amount}}<br/>
+ totalprice:{{x.totalprice}}<br/>
+  unit price:{{x.unitprice}}<br/>
+ </td>
+ <td>
+ date:{{x.stringorderdate}}
+ </td>
+ </tr>
+ </table>
 </div>
 
 
  <!--  //order3 -->
-<div  style="margin-left:8%;background-color:skyblue;width:85%;display:none;font-size:0.80em;padding:20px;text-align:center;" id="3">
-<h4>আজকের মোট অর্ডার   id=x</h4>
+<div  style="margin-left:8%;background-color:skyblue;width:85%;display:none;font-size:0.80em;padding:20px;text-align:center;" id="2">
+<h4>মাসিক  অর্ডার দেখুন  id=2</h4>
+ <h4 style="text-align:center;color:white;">মাসিক  odar  হিসাব   </h4>
+  
+  month::<select ng-options="c for c in msmvalue" ng-model="momonth"></select> <br/> 
+  
+  year::<select ng-options="c for c in year" ng-model="moyear"></select>
+  <br/> <br/>
+  <button ng-click="monthlyorder()" class="btn btn-sm btn-success">click</button>
+  <br/>
+  
+ <h4 ng-if="mor!=null">total sell : {{mor.totalodar}}tk </h4> 
+ <br/>
+ <table align="center" border="1" ng-if="mor.odars.length>0">
+ <tr>
+ <th>
+ product <br/>
+ information
+ </th>
+ <th>
+ amount <br/>
+ & taka
+ </th>
+ <th>
+ sell date
+ </th>
+ </tr>
+ 
+ <tr ng-repeat="x in mor.odars">
+ <td>
+ name:{{x.name}} <br/>
+ company:{{x.company}} <br/>
+ code:{{x.code}}<br/>
+ unit price:{{x.unitprice}}<br/>
+
+ 
+ </td>
+ 
+
+ <td>
+ amount:{{x.amount}}<br/>
+ totalprice:{{x.totalprice}}<br/>
+  unit price:{{x.unitprice}}<br/>
+ </td>
+ <td>
+ date:{{x.stringorderdate}}
+ </td>
+ </tr>
+ </table>
 
 </div>
 
@@ -811,13 +982,13 @@ year:<select  ng-options="c for c in year" ng-model="sellyear" ></select>
 <br/>
 <b>sell to:-</b><select ng-options="c for c in sellto" ng-model="sell[0].sellto" ng-change="selectcustomer()"></select>
 <br/>
-
 <div ng-if="sell[0].sellto=='toperson'">
-
+customer name: <input ng-model="sell[0].customername" /> <br/>
+customer phone: <input ng-model="sell[0].customerphone" > <br/>
 </div>
 
 <div ng-if="sell[0].sellto=='toshopkeeper'">
-
+shop id: <input type="number" ng-model="sell[0].sellsshopid"> <br/>
 </div>
 
 <table border="1" align="center" > 
@@ -858,10 +1029,17 @@ product name
 </td>
 
 <td><input type="number"  ng-model="x.amount" ng-keyup="setprice2($index,x)" /></td>
-<td><input type="number"  ng-model="x.unitprice" ng-keyup="setprice2($index,x)"  /></td>
+<td><input type="number"  ng-model="x.unitprice" ng-keyup="setprice2($index,x)"  />
+<div ng-if="makeprice[$index]!=null">
+<b style="color:green;">last price:{{makeprice[$index].last}}</b> <br/>
+<b style="color:green;">avg price:{{makeprice[$index].avg}}</b> <br/>
+<b style="color:green;">max price:{{makeprice[$index].max}}</b> <br/>
+<b style="color:green;">min price:{{makeprice[$index].min}}</b> <br/>
+</div>
+</td>
 <td><input type="number"  ng-model="x.totalprice" /></td>
-<td><button class="btn btn-primary btn-sm" ng-click="addorder($index)">(+)</button> <br/> <br/>
-<button class="btn btn-primary btn-sm" ng-click="removeorder($index)">(-)</button></td>
+<td><button class="btn btn-primary btn-sm" ng-click="addsell($index)">(+)</button> <br/> <br/>
+<button class="btn btn-primary btn-sm" ng-click="removesell($index)">(-)</button></td>
 
 </tr>
 </table>
@@ -874,10 +1052,71 @@ product name
 </div>
 
 
-<!-- -//sell2 -->
+<!-- -//sell2 id="5"-->
 <div  style="margin-left:8%;text-align:center;background-color:burlywood;width:85%;display:none;font-size:0.80em;" id="5">
 
-  <h4 style="text-align:center;color:white;">মাসিক  বিক্রি হিসাব  id="5"</h4>
+  <h4 style="text-align:center;color:white;">মাসিক  বিক্রি হিসাব   </h4>
+  
+  month::<select ng-options="c for c in msmvalue" ng-model="msmonth"></select> <br/> 
+  
+  year::<select ng-options="c for c in year" ng-model="msyear"></select>
+  <br/> <br/>
+  <button ng-click="mssell()" class="btn btn-sm btn-success">sell now</button>
+  <br/>
+  
+ <h4 ng-if="msr!=null">total sell : {{msr.totalsell}}tk  total due :  {{msr.totaldue}}</h4> 
+ <br/>
+ <table align="center" border="1" ng-if="msr.sells.length>0">
+ <tr>
+ <th>
+ product <br/>
+ information
+ </th>
+ <th>
+ Shop id <br/>
+ or customer
+ </th>
+ <th>
+ amount <br/>
+ & taka
+ </th>
+ <th>
+ sell date
+ </th>
+ </tr>
+ 
+ <tr ng-repeat="x in msr.sells">
+ <td>
+ name:{{x.name}} <br/>
+ company:{{x.company}} <br/>
+ code:{{x.code}}<br/>
+ unit price:{{x.unitprice}}<br/>
+
+ 
+ </td>
+ 
+  <td>
+  <div ng-if="x.sellto=='toperson'">
+   customer name:{{x.customername}}<br/>
+   phone:{{x.customerphone}}<br/>
+   
+  </div>
+  
+<div ng-if="x.sellto=='toshopkeeper'">
+  shop id:{{x.sellshopid}} <br/>
+  </div>
+  
+ </td>
+ <td>
+ amount:{{x.amount}}<br/>
+ totalprice:{{x.totalprice}}<br/>
+  unit price:{{x.unitprice}}<br/>
+ </td>
+ <td>
+ date: {{x.stringselldate}}
+ </td>
+ </tr>
+ </table>
 
 </div>
 
@@ -885,6 +1124,63 @@ product name
 <!-- -//sell3 -->
 <div  style="margin-left:8%;background-color:skyblue;width:85%;display:none;font-size:0.80em;padding:20px;text-align:center;" id="6">
 <h4>আজকের  মোট বিক্রি id=6</h4>
+ <br/><br/>
+  <button ng-click="todayssell()" class="btn btn-sm btn-success">sell now</button>
+  <br/>
+ 
+ <h4 ng-if="tsr!=null">total sell : {{tsr.totalsell}}tk  total due :  {{tsr.totaldue}}</h4> 
+ <br/>
+ <table align="center" border="1" ng-if="tsr.sells.length>0">
+ <tr>
+ <th>
+ product <br/>
+ information
+ </th>
+ <th>
+ Shop id <br/>
+ or customer
+ </th>
+ <th>
+ amount <br/>
+ & taka
+ </th>
+ <th>
+ sell date
+ </th>
+ </tr>
+ 
+ <tr ng-repeat="x in tsr.sells">
+ <td>
+ name:{{x.name}} <br/>
+ company:{{x.company}} <br/>
+ code:{{x.code}}<br/>
+ unit price:{{x.unitprice}}<br/>
+
+ 
+ </td>
+ 
+  <td>
+  <div ng-if="x.sellto=='toperson'">
+   customer name:{{x.customername}}<br/>
+   phone:{{x.customerphone}}<br/>
+   
+  </div>
+  
+<div ng-if="x.sellto=='toshopkeeper'">
+  shop id:{{x.sellhopid}} <br/>
+  </div>
+  
+ </td>
+ <td>
+ amount:{{x.amount}}<br/>
+ totalprice:{{x.totalprice}}<br/>
+  unit price:{{x.unitprice}}<br/>
+ </td>
+ <td>
+ date: {{x.stringselldate}}
+ </td>
+ </tr>
+ </table>
 
 </div>
 
